@@ -54,7 +54,7 @@ class UpdateDroneStatusRequest(BaseModel):
 
 # Auth
 class TokenRequest(BaseModel):
-    name: str
+    name: str = Field(min_length=2)
     type: Literal["admin", "enduser", "drone"]
 
 

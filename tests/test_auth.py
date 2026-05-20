@@ -30,6 +30,16 @@ def test_missing_name_rejected(client):
     assert response.status_code == 422
 
 
+def test_empty_name_rejected(client):
+    response = client.post("/auth/token", json={"name": "", "type": "admin"})
+    assert response.status_code == 422
+
+
+def test_single_char_name_rejected(client):
+    response = client.post("/auth/token", json={"name": "a", "type": "admin"})
+    assert response.status_code == 422
+
+
 def test_protected_endpoint_rejects_no_token(client):
     response = client.get("/orders/")
     assert response.status_code == 401
