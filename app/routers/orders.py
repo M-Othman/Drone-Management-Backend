@@ -14,12 +14,12 @@ from app.models import (
     OrderStatus,
     UpdateOrderRequest,
 )
-from app.utils import estimate_eta_minutes
+from app.utils import build_order_detail
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 CANCELLABLE_STATES = {OrderStatus.created, OrderStatus.assigned}
-TERMINAL_STATES = {OrderStatus.delivered, OrderStatus.cancelled}
+TERMINAL_STATES = {OrderStatus.delivered, OrderStatus.failed, OrderStatus.cancelled}
 
 
 def _get_order_or_404(order_id: UUID, user: CurrentUser) -> Order:
@@ -31,26 +31,6 @@ def _get_order_or_404(order_id: UUID, user: CurrentUser) -> Order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
 
-
-def _build_detail(order: Order) -> OrderDetailResponse:
-    drone_location = None
-    eta_minutes = None
-
-    if order.assigned_drone_name:
-        drone = store.drones.get(order.assigned_drone_name)
-        if drone and drone.location:
-            drone_location = drone.location
-            if order.status == OrderStatus.assigned:
-                eta_minutes = estimate_eta_minutes(drone.location, order.origin) + \
-                              estimate_eta_minutes(order.origin, order.destination)
-            elif order.status == OrderStatus.in_transit:
-                eta_minutes = estimate_eta_minutes(drone.location, order.destination)
-
-    return OrderDetailResponse(
-        **order.model_dump(),
-        drone_location=drone_location,
-        eta_minutes=eta_minutes,
-    )
 
 
 @router.post("/", response_model=Order)
@@ -64,6 +44,7 @@ def create_order(
         submitted_by=user.name,
         origin=body.origin,
         destination=body.destination,
+        current_location=body.origin,
         created_at=now,
         updated_at=now,
     )
@@ -83,7 +64,7 @@ def get_order(
     order_id: UUID,
     user: Annotated[CurrentUser, Depends(require_role("enduser", "admin"))],
 ):
-    return _build_detail(_get_order_or_404(order_id, user))
+    return build_order_detail(_get_order_or_404(order_id, user))
 
 
 @router.patch("/{order_id}", response_model=Order)

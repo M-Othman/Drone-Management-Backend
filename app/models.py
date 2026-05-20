@@ -23,6 +23,7 @@ class OrderStatus(str, Enum):
     assigned = "assigned"
     in_transit = "in_transit"
     delivered = "delivered"
+    failed = "failed"
     cancelled = "cancelled"
 
 
@@ -40,9 +41,15 @@ class Order(BaseModel):
     status: OrderStatus = OrderStatus.created
     origin: Location
     destination: Location
+    current_location: Optional[Location] = None
     assigned_drone_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+
+
+# Drones
+class UpdateDroneStatusRequest(BaseModel):
+    status: Literal["broken", "available"]
 
 
 # Auth
@@ -78,8 +85,8 @@ class OrderDetailResponse(BaseModel):
     status: OrderStatus
     origin: Location
     destination: Location
+    current_location: Optional[Location] = None
     assigned_drone_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    drone_location: Optional[Location] = None
     eta_minutes: Optional[float] = None
