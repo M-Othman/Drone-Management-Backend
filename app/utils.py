@@ -21,8 +21,8 @@ def build_order_detail(order: Order) -> OrderDetailResponse:
     if order.status == OrderStatus.assigned:
         drone = store.drones.get(order.assigned_drone_name)
         if drone and drone.location:
-            eta_minutes = estimate_eta_minutes(drone.location, order.origin) + \
-                          estimate_eta_minutes(order.origin, order.destination)
+            eta_minutes = estimate_eta_minutes(drone.location, order.current_location) + \
+                          estimate_eta_minutes(order.current_location, order.destination)
     elif order.status == OrderStatus.in_transit:
         drone = store.drones.get(order.assigned_drone_name)
         if drone and drone.location:

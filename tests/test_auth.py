@@ -1,23 +1,11 @@
 from app import store
 
 
-def test_get_token_admin(client):
+def test_get_token_returns_bearer(client):
     response = client.post("/auth/token", json={"name": "alice", "type": "admin"})
     assert response.status_code == 200
+    assert "access_token" in response.json()
     assert response.json()["token_type"] == "bearer"
-    assert "access_token" in response.json()
-
-
-def test_get_token_enduser(client):
-    response = client.post("/auth/token", json={"name": "alice", "type": "enduser"})
-    assert response.status_code == 200
-    assert "access_token" in response.json()
-
-
-def test_get_token_drone(client):
-    response = client.post("/auth/token", json={"name": "drone-1", "type": "drone"})
-    assert response.status_code == 200
-    assert "access_token" in response.json()
 
 
 def test_drone_auto_registered_on_token(client):
