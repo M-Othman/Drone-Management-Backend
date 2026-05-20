@@ -56,7 +56,7 @@ pytest
 uvicorn app.main:app --reload
 ```
 
-The server starts at `http://localhost:8000`. Interactive API docs are available at `http://localhost:8000/docs`.
+The server starts at `http://localhost:8000`.
 
 ## Auth
 
@@ -64,10 +64,11 @@ All endpoints require a Bearer JWT. Obtain one via:
 
 ```
 POST /auth/token
-{ "name": "alice", "type": "admin" }   # type: admin | enduser | drone
+{ "name": "alice", "type": "admin" }
 ```
 
-Pass the returned token as `Authorization: Bearer <token>` on all subsequent requests.
+Type can be admin, enduser, or drone.
+Some APIs can only be accessed by a certain type.
 
-Drones are automatically registered in the system on their first token request.
+Pass the returned token as `Authorization: Bearer <token>` on all subsequent requests.
 
