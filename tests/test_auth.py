@@ -52,6 +52,6 @@ def test_protected_endpoint_rejects_invalid_token(client):
     assert response.status_code == 401
 
 
-def test_enduser_get_orders_rejected(client, enduser_token):
-    response = client.get("/orders/", headers={"Authorization": f"Bearer {enduser_token}"})
+def test_enduser_get_orders_rejected(client, make_headers, enduser_token):
+    response = client.get("/orders/", headers=make_headers(enduser_token))
     assert response.status_code == 403

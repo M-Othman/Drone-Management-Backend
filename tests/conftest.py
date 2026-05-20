@@ -20,6 +20,13 @@ def client():
 
 
 @pytest.fixture
+def make_headers():
+    def _make(token: str) -> dict:
+        return {"Authorization": f"Bearer {token}"}
+    return _make
+
+
+@pytest.fixture
 def admin_token(client):
     return client.post("/auth/token", json={"name": "admin", "type": "admin"}).json()["access_token"]
 
@@ -35,21 +42,6 @@ def drone_token(client):
 
 
 @pytest.fixture
-def admin_headers(admin_token):
-    return {"Authorization": f"Bearer {admin_token}"}
-
-
-@pytest.fixture
-def enduser_headers(enduser_token):
-    return {"Authorization": f"Bearer {enduser_token}"}
-
-
-@pytest.fixture
-def drone_headers(drone_token):
-    return {"Authorization": f"Bearer {drone_token}"}
-
-
-@pytest.fixture
-def order(client, enduser_headers):
-    response = client.post("/orders/", json={"origin": ORIGIN, "destination": DESTINATION}, headers=enduser_headers)
+def order(client, make_headers, enduser_token):
+    response = client.post("/orders/", json={"origin": ORIGIN, "destination": DESTINATION}, headers=make_headers(enduser_token))
     return response.json()
