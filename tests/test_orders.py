@@ -61,6 +61,24 @@ def test_admin_list_orders(client, make_headers, admin_token, order):
     assert orders[0]["status"] == "created"
 
 
+def test_admin_list_orders_by_ids(client, make_headers, admin_token, enduser_token):
+    o1 = client.post("/orders/", json={"origin": ORIGIN, "destination": DESTINATION}, headers=make_headers(enduser_token)).json()
+    o2 = client.post("/orders/", json={"origin": ORIGIN, "destination": DESTINATION}, headers=make_headers(enduser_token)).json()
+    client.post("/orders/", json={"origin": ORIGIN, "destination": DESTINATION}, headers=make_headers(enduser_token))
+    response = client.get(f"/orders/?ids={o1['id']}&ids={o2['id']}", headers=make_headers(admin_token))
+    assert response.status_code == 200
+    returned_ids = {o["id"] for o in response.json()}
+    assert returned_ids == {o1["id"], o2["id"]}
+
+
+def test_admin_list_orders_by_ids_ignores_unknown(client, make_headers, admin_token, order):
+    fake_id = "00000000-0000-0000-0000-000000000000"
+    response = client.get(f"/orders/?ids={order['id']}&ids={fake_id}", headers=make_headers(admin_token))
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["id"] == order["id"]
+
+
 # --- Update order ---
 
 def test_admin_update_destination(client, make_headers, admin_token, order):

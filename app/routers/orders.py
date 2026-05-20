@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app import store
 from app.auth import require_role
@@ -55,7 +55,10 @@ def create_order(
 @router.get("/", response_model=list[Order])
 def list_orders(
     user: Annotated[CurrentUser, Depends(require_role("admin"))],
+    ids: Annotated[list[UUID] | None, Query()] = None,
 ):
+    if ids:
+        return [store.orders[i] for i in ids if i in store.orders]
     return list(store.orders.values())
 
 
