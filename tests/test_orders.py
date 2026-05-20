@@ -5,13 +5,18 @@ from tests.conftest import DESTINATION, ORIGIN
 
 def test_create_order(client, make_headers, enduser_token):
     response = client.post("/orders/", json={"origin": ORIGIN, "destination": DESTINATION}, headers=make_headers(enduser_token))
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["status"] == "created"
     assert data["origin"] == ORIGIN
     assert data["destination"] == DESTINATION
     assert data["current_location"] == ORIGIN
     assert data["submitted_by"] == "alice"
+
+
+def test_create_order_invalid_location(client, make_headers, enduser_token):
+    response = client.post("/orders/", json={"origin": {"lat": 999, "lng": 55.0}, "destination": DESTINATION}, headers=make_headers(enduser_token))
+    assert response.status_code == 422
 
 
 def test_create_order_requires_enduser(client, make_headers, admin_token):

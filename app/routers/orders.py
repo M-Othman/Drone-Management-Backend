@@ -33,7 +33,7 @@ def _get_order_or_404(order_id: UUID, user: CurrentUser) -> Order:
 
 
 
-@router.post("/", response_model=Order)
+@router.post("/", response_model=Order, status_code=201)
 def create_order(
     body: CreateOrderRequest,
     user: Annotated[CurrentUser, Depends(require_role("enduser"))],
